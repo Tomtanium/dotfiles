@@ -1,0 +1,14 @@
+
+xmonad.hs:69:18: warning: [-Wtabs]
+    Tab character found here, and in 18 further locations.
+    Please use spaces instead.
+   |
+69 |     [ ((mod4Mask,           xK_l     ), spawn "i3lock-fancy-multimonitor --blur=20x20")
+   |                  ^^^^^^^
+
+xmonad.hs:196:16: warning: [-Wdeprecations]
+    In the use of ‘spacing’ (imported from XMonad.Layout.Spacing):
+    Deprecated: "Use spacingRaw instead."
+    |
+196 |      tiled   = spacing 10 $ Tall nmaster delta ratio
+    |                ^^^^^^^

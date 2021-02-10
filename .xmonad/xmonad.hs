@@ -9,16 +9,20 @@
 
 import XMonad
 import XMonad.Layout.NoBorders
+import XMonad.Hooks.FadeInactive
+import XMonad.Hooks.DynamicBars
 import Data.Monoid
 import System.Exit
 import XMonad.Util.SpawnOnce
 import XMonad.Util.Run
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.DynamicLog
 import XMonad.Layout.Spacing
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.WorkspaceHistory
+import XMonad.Hooks.EwmhDesktops
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -190,6 +194,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
+
 myLayout = avoidStruts (tiled ||| Mirror tiled ||| noBorders Full) ||| noBorders Full
   where
      -- default tiling algorithm partitions the screen into two panes
@@ -213,7 +218,7 @@ xmobarEscape = concatMap doubleLts
 
 myClickableWorkspaces :: [String]
 myClickableWorkspaces = clickable . (map xmobarEscape)
-               $ [" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", " 9 "]
+               $ ["  1  ", "  2  ", "  3  ", "  4  ", "  5  ", "  6  ", "  7  ", "  8  ", "  9  "]
                -- $ [" dev ", " www ", " sys ", " doc ", " vbox ", " chat ", " mus ", " vid ", " gfx "]
   where
         clickable l = [ "<action=xdotool key alt+" ++ show (n) ++ ">" ++ ws ++ "</action>" |
@@ -258,7 +263,6 @@ myEventHook = mempty
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
-myLogHook = return ()
 
 ------------------------------------------------------------------------
 
@@ -291,9 +295,11 @@ myStartupHook = do
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
+
 main = do 
 	xmproc0 <- spawnPipe "xmobar -x 0 /home/thomas/.config/xmobar/xmobarrc"
-	xmonad $ docks $ defaults xmproc0 
+	xmproc1 <- spawnPipe "xmobar -x 0 /home/thomas/.config/xmobar/xmobarrc1"
+	xmonad $ docks $ defaults xmproc0 xmproc1 
 
 -- A structure containing your configuration settings, overriding
 -- fields in the default config. Any you don't override, will
@@ -301,7 +307,7 @@ main = do
 --
 -- No need to modify this.
 --
-defaults xmproc0 = def {
+defaults xmproc0 xmproc1 = def {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
@@ -320,7 +326,7 @@ defaults xmproc0 = def {
         layoutHook         = myLayout,
         manageHook         = myManageHook,
 	logHook            = workspaceHistoryHook <+> myLogHook <+> dynamicLogWithPP xmobarPP
-                        	{ ppOutput = \x -> hPutStrLn xmproc0 x 
+                        	{ ppOutput = \x -> hPutStrLn xmproc0 x >> hPutStrLn xmproc1 x
                         	, ppCurrent = xmobarColor "#98be65" "" . wrap "[" "]" -- Current workspace in xmobar
                         	, ppVisible = xmobarColor "#98be65" ""                -- Visible but not current workspace
                         	, ppHidden = xmobarColor "#82AAFF" "" . wrap "*" ""   -- Hidden workspaces in xmobar
@@ -335,6 +341,10 @@ defaults xmproc0 = def {
         handleEventHook    = myEventHook,
         startupHook        = myStartupHook
     }
+
+myLogHook :: X ()
+myLogHook = fadeInactiveLogHook fadeAmount
+	where fadeAmount = 1.0
 
 -- | Finally, a copy of the default bindings in simple textual tabular format.
 help :: String
